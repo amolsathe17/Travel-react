@@ -91,6 +91,7 @@ export const Footers = () => {
                     { name: "Hotels & Resorts", link: "/under-construction" },
                     { name: "Popular Destinations", link: "/popular-destinations"},
                     { name: "Login", link: "/Login"},
+
                   ].map((item, i) => (
                     <li key={i}>
                       <Link
@@ -117,6 +118,7 @@ export const Footers = () => {
                     { name: "Privacy Policy", link: "/under-construction" },
                     { name: "Terms & Conditions", link: "/under-construction" },
                     { name: "Contact", link: "/contact" },
+                    { name: "Admin", link: "/Admin"},
                   ].map((item, i) => (
                     <li key={i}>
                       <Link
