@@ -6,39 +6,36 @@ import {
 } from "@fortawesome/free-brands-svg-icons";
 
 import { useState } from "react";
-
+import { Link } from 'react-router-dom';
 export const Footers = () => {
   const year = new Date().getFullYear(); // dynamic year
 
   const [email, setEmail] = useState("");
 
-const handleSubscribe = async () => {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const handleSubscribe = async () => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-  if (!email || !emailRegex.test(email)) {
-    alert("Enter valid email");
-    return;
-  }
+    if (!email || !emailRegex.test(email)) {
+      alert("Enter valid email");
+      return;
+    }
 
-  try {
-    const res = await fetch("/.netlify/functions/subscribe", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ email }),
-    });
+    try {
+      const res = await fetch("/.netlify/functions/subscribe", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
+      });
 
-    const data = await res.json();
-    alert(data.message);
-    setEmail("");
-
-  } catch (err) {
-    alert("Server error");
-  }
-};
-
-
+      const data = await res.json();
+      alert(data.message);
+      setEmail("");
+    } catch (err) {
+      alert("Server error");
+    }
+  };
 
   return (
     <footer className="relative bg-linear-to-br from-gray-900 via-black to-gray-900 text-white pt-5 pb-5 overflow-hidden">
@@ -92,17 +89,20 @@ const handleSubscribe = async () => {
                     { name: "About Us", link: "/About" },
                     { name: "Tours Packages", link: "/under-construction" },
                     { name: "Hotels & Resorts", link: "/under-construction" },
-                    { name: "Popular Destinations", link: "/popular-destinations",
+                    {
+                      name: "Popular Destinations",
+                      link: "/popular-destinations",
                     },
                   ].map((item, i) => (
                     <li key={i}>
-                      <a
-                        href={item.link}
+                      <Link
+                        to={item.link}
                         className="text-gray-400 hover:text-white relative inline-block transition group"
                       >
                         {item.name}
-                        <span className="absolute left-0 -bottom-1 w-0 h-0.5 bg-green-500 group-hover:w-full transition-all"></span>
-                      </a>
+                      </Link>
+
+                      <span className="absolute left-0 -bottom-1 w-0 h-0.5 bg-green-500 group-hover:w-full transition-all"></span>
                     </li>
                   ))}
                 </ul>
@@ -113,7 +113,7 @@ const handleSubscribe = async () => {
                   Support
                 </h4>
 
-               <ul className="space-y-4">
+                <ul className="space-y-4">
                   {[
                     { name: "FAQ", link: "/faq" },
                     { name: "Privacy Policy", link: "/under-construction" },
@@ -121,13 +121,13 @@ const handleSubscribe = async () => {
                     { name: "Contact", link: "/contact" },
                   ].map((item, i) => (
                     <li key={i}>
-                      <a
-                        href={item.link}
+                      <Link
+                        to={item.link}
                         className="text-gray-400 hover:text-white relative inline-block transition group"
                       >
                         {item.name}
                         <span className="absolute left-0 -bottom-1 w-0 h-0.5 bg-green-500 group-hover:w-full transition-all"></span>
-                      </a>
+                      </Link>
                     </li>
                   ))}
                 </ul>
@@ -149,11 +149,16 @@ const handleSubscribe = async () => {
               <div className="flex items-center bg-white/5 border border-white/10 rounded-xl overflow-hidden backdrop-blur-lg w-full max-w-md mx-auto md:mx-0">
                 <input
                   type="email"
-                  placeholder="Enter your email" value={email}
-  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Enter your email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   className="bg-transparent px-4 py-3 w-full outline-none text-sm text-white placeholder-gray-400"
                 />
-                <button onClick={handleSubscribe} className="bg-linear-to-r from-green-500 to-orange-500 px-5 py-3 text-sm font-medium hover:opacity-90 transition cursor-pointer" onClick={handleSubscribe}>
+                <button
+                  onClick={handleSubscribe}
+                  className="bg-linear-to-r from-green-500 to-orange-500 px-5 py-3 text-sm font-medium hover:opacity-90 transition cursor-pointer"
+                  onClick={handleSubscribe}
+                >
                   Subscribe
                 </button>
               </div>
