@@ -6,7 +6,7 @@ import {
 } from "@fortawesome/free-brands-svg-icons";
 
 import { useState } from "react";
-import { Link } from 'react-router-dom';
+import { Link } from "react-router-dom";
 export const Footers = () => {
   const year = new Date().getFullYear(); // dynamic year
 
@@ -89,10 +89,8 @@ export const Footers = () => {
                     { name: "About Us", link: "/About" },
                     { name: "Tours Packages", link: "/under-construction" },
                     { name: "Hotels & Resorts", link: "/under-construction" },
-                    {
-                      name: "Popular Destinations",
-                      link: "/popular-destinations",
-                    },
+                    { name: "Popular Destinations", link: "/popular-destinations"},
+                    { name: "Login", link: "/Login"},
                   ].map((item, i) => (
                     <li key={i}>
                       <Link
