@@ -28,7 +28,7 @@ exports.handler = async (event) => {
       await client.connect();
     }
 
-    const db = client.db("test"); // 👉 change DB name if you want
+    const db = client.db("travel"); // 👉 change DB name if you want
 
     // Save email in "subscribers" collection
     await db.collection("subscribers").insertOne({
