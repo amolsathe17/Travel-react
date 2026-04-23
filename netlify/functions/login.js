@@ -15,7 +15,18 @@ const Login = () => {
         body: JSON.stringify(form),
       });
 
-      const data = await res.json();
+      // ✅ Handle non-JSON safely
+      let data;
+      try {
+        data = await res.json();
+      } catch {
+        throw new Error("Invalid server response");
+      }
+
+      // ✅ Handle HTTP errors (like 502, 404)
+      if (!res.ok) {
+        throw new Error(data?.error || "Server error");
+      }
 
       if (data.token) {
         localStorage.setItem("token", data.token);
@@ -24,7 +35,14 @@ const Login = () => {
         alert("Invalid login");
       }
     } catch (err) {
-      alert("Error logging in");
+      console.error("Login error:", err);
+
+      // ✅ Better error messages
+      if (err.message.includes("Failed to fetch")) {
+        alert("Server not reachable. Check deployment.");
+      } else {
+        alert(err.message || "Error logging in");
+      }
     }
   };
 
@@ -36,6 +54,7 @@ const Login = () => {
         <img
           src="./maldives.jpg"
           className="w-full h-full object-cover"
+          alt="background"
         />
       </div>
 
