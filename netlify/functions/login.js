@@ -4,7 +4,7 @@ let client;
 
 exports.handler = async (event) => {
   try {
-    // Allow only POST
+    // Only POST allowed
     if (event.httpMethod !== "POST") {
       return {
         statusCode: 405,
@@ -21,33 +21,37 @@ exports.handler = async (event) => {
       };
     }
 
-    // Check env variable
-    if (!process.env.MONGO_URI) {
-      throw new Error("MONGO_URI not set");
-    }
-
-    // Connect DB
-    if (!client) {
-      client = new MongoClient(process.env.MONGO_URI);
-      await client.connect();
-    }
-
-    const db = client.db("travel");
-
-    const user = await db.collection("users").findOne({ username });
-
-    if (!user || user.password !== password) {
+    // 🔥 SIMPLE ADMIN LOGIN (works instantly)
+    if (username === "admin" && password === "1234") {
       return {
-        statusCode: 401,
-        body: JSON.stringify({ error: "Invalid login" }),
+        statusCode: 200,
+        body: JSON.stringify({ token: "admin123" }),
       };
     }
 
+    // OPTIONAL: MongoDB check (if you want DB login)
+    if (process.env.MONGO_URI) {
+      if (!client) {
+        client = new MongoClient(process.env.MONGO_URI);
+        await client.connect();
+      }
+
+      const db = client.db("test");
+
+      const user = await db.collection("users").findOne({ username });
+
+      if (user && user.password === password) {
+        return {
+          statusCode: 200,
+          body: JSON.stringify({ token: "admin123" }),
+        };
+      }
+    }
+
+    // ❌ If nothing matched
     return {
-      statusCode: 200,
-      body: JSON.stringify({
-        token: "admin123",
-      }),
+      statusCode: 401,
+      body: JSON.stringify({ error: "Invalid username or password" }),
     };
   } catch (err) {
     console.error("LOGIN ERROR:", err);
