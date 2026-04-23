@@ -7,7 +7,7 @@ exports.handler = async (event) => {
     const data = JSON.parse(event.body);
 
     await client.connect();
-    const db = client.db("test"); // change DB name if needed
+    const db = client.db("travel"); // change DB name if needed
 
     await db.collection("contacts").insertOne(data);
 
