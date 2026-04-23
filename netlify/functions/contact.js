@@ -1,4 +1,4 @@
-const { MongoClient } = require("mongodb");
+const { MongoClient } = require("mongoose");
 
 const client = new MongoClient(process.env.MONGO_URI);
 
