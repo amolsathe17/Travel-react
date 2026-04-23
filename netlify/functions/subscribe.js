@@ -4,7 +4,7 @@ let client;
 
 exports.handler = async (event) => {
   try {
-    // Only allow POST request
+    // Only allow POST
     if (event.httpMethod !== "POST") {
       return {
         statusCode: 405,
@@ -12,8 +12,18 @@ exports.handler = async (event) => {
       };
     }
 
-    // Get data from frontend
-    const { email } = JSON.parse(event.body);
+    // Parse request safely
+    let body;
+    try {
+      body = JSON.parse(event.body);
+    } catch {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ error: "Invalid JSON" }),
+      };
+    }
+
+    const { email } = body;
 
     if (!email) {
       return {
@@ -22,15 +32,32 @@ exports.handler = async (event) => {
       };
     }
 
-    // Connect to MongoDB (from Netlify env variable)
+    // 🔴 Check env variable
+    if (!process.env.MONGO_URI) {
+      throw new Error("MONGO_URI not set in Netlify");
+    }
+
+    // Connect MongoDB
     if (!client) {
       client = new MongoClient(process.env.MONGO_URI);
       await client.connect();
     }
 
-    const db = client.db("travel"); // 👉 change DB name if you want
+    const db = client.db("test");
 
-    // Save email in "subscribers" collection
+    // Prevent duplicate emails
+    const existing = await db
+      .collection("subscribers")
+      .findOne({ email });
+
+    if (existing) {
+      return {
+        statusCode: 200,
+        body: JSON.stringify({ message: "Already subscribed" }),
+      };
+    }
+
+    // Save email
     await db.collection("subscribers").insertOne({
       email,
       createdAt: new Date(),
@@ -41,9 +68,13 @@ exports.handler = async (event) => {
       body: JSON.stringify({ message: "Subscribed successfully" }),
     };
   } catch (error) {
+    console.error("SUBSCRIBE ERROR:", error);
+
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: error.message }),
+      body: JSON.stringify({
+        error: error.message || "Server error",
+      }),
     };
   }
 };

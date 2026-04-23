@@ -12,7 +12,7 @@ import {
   Pie,
   Cell,
 } from "recharts";
-import { Mail, Star, Check, Trash } from "lucide-react"; // ✅ added icons
+import { Mail, Star, Check, Trash } from "lucide-react";
 
 const Admin = () => {
   const [users, setUsers] = useState([]);
@@ -25,8 +25,8 @@ const Admin = () => {
   const [replyBox, setReplyBox] = useState(null);
   const [replyMessage, setReplyMessage] = useState("");
 
-  const [notificationCount, setNotificationCount] = useState(0); // 🔔 NEW
-  const prevContactsRef = useRef([]); // 🔔 NEW
+  const [notificationCount, setNotificationCount] = useState(0);
+  const prevContactsRef = useRef([]);
 
   const [currentPage, setCurrentPage] = useState(1);
   const [usersPerPage, setUsersPerPage] = useState(5);
@@ -38,38 +38,26 @@ const Admin = () => {
     if (!token) navigate("/login");
   }, []);
 
+  // ✅ FETCH USERS
   const fetchUsers = async () => {
     try {
-      const res = await fetch("/.netlify/functions/subscribers", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (res.status === 403) {
-        localStorage.removeItem("token");
-        navigate("/login");
-        return;
-      }
-
+      const res = await fetch("/.netlify/functions/subscribers");
       const data = await res.json();
       setUsers(data);
     } catch {
-      alert("Backend not running");
+      alert("Backend error");
     }
   };
 
+  // ✅ FETCH CONTACTS
   const fetchContacts = async () => {
     try {
-      const res = await fetch("/.netlify/functions/contacts", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await fetch("/.netlify/functions/contacts");
       const data = await res.json();
 
-      // 🔔 LIVE NOTIFICATION LOGIC
       if (prevContactsRef.current.length > 0) {
         const diff = data.length - prevContactsRef.current.length;
-        if (diff > 0) {
-          setNotificationCount((prev) => prev + diff);
-        }
+        if (diff > 0) setNotificationCount((prev) => prev + diff);
       }
 
       prevContactsRef.current = data;
@@ -79,11 +67,10 @@ const Admin = () => {
     }
   };
 
+  // ✅ FETCH TEMPLATES
   const fetchTemplates = async () => {
     try {
-      const res = await fetch("/.netlify/functions/templates", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await fetch("/.netlify/functions/templates");
       const data = await res.json();
       setTemplates(data);
     } catch (err) {
@@ -96,11 +83,7 @@ const Admin = () => {
     fetchTemplates();
     fetchContacts();
 
-    // 🔥 polling (live feel)
-    const interval = setInterval(() => {
-      fetchContacts();
-    }, 5000);
-
+    const interval = setInterval(fetchContacts, 5000);
     return () => clearInterval(interval);
   }, []);
 
@@ -108,41 +91,45 @@ const Admin = () => {
     setCurrentPage(1);
   }, [search, usersPerPage]);
 
+  // ✅ DELETE SUBSCRIBER
   const handleDelete = async (id) => {
     if (!window.confirm("Delete subscriber?")) return;
 
-    await fetch(`/.netlify/functions/delete/${id}`, {
+    await fetch(`/.netlify/functions/delete?id=${id}`, {
       method: "DELETE",
-      headers: { Authorization: `Bearer ${token}` },
     });
 
     fetchUsers();
   };
 
+  // ✅ DELETE CONTACT
   const deleteContact = async (id) => {
     if (!window.confirm("Delete message?")) return;
 
-    await fetch(`/.netlify/functions/contact/${id}`, {
+    await fetch(`/.netlify/functions/contact?id=${id}`, {
       method: "DELETE",
     });
 
     fetchContacts();
   };
 
+  // ✅ MARK IMPORTANT
   const toggleImportant = async (id) => {
-    await fetch(`/.netlify/functions/contact/important/${id}`, {
+    await fetch(`/.netlify/functions/important?id=${id}`, {
       method: "PUT",
     });
     fetchContacts();
   };
 
+  // ✅ MARK REPLIED
   const markReplied = async (id) => {
-    await fetch(`/.netlify/functions/contact/replied/${id}`, {
+    await fetch(`/.netlify/functions/replied?id=${id}`, {
       method: "PUT",
     });
     fetchContacts();
   };
 
+  // ✅ SEND TEMPLATE
   const sendTemplate = async () => {
     if (!selectedTemplate) return alert("Select template first");
 
@@ -152,7 +139,6 @@ const Admin = () => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({ templateName: selectedTemplate }),
     });
@@ -161,16 +147,20 @@ const Admin = () => {
     setLoading(false);
   };
 
+  // ✅ EXPORT
   const handleExport = () => {
     window.open("/.netlify/functions/export");
   };
 
+  // ✅ REPLY
   const sendReply = async () => {
     if (!replyMessage) return alert("Write message");
 
     await fetch("/.netlify/functions/reply", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({
         email: replyBox.email,
         message: replyMessage,
@@ -185,11 +175,11 @@ const Admin = () => {
   };
 
   const filteredUsers = users.filter((u) =>
-    u.email.toLowerCase().includes(search.toLowerCase()),
+    u.email.toLowerCase().includes(search.toLowerCase())
   );
 
   const filteredContacts = contacts.filter((c) =>
-    c.email.toLowerCase().includes(search.toLowerCase()),
+    c.email.toLowerCase().includes(search.toLowerCase())
   );
 
   const indexOfLast = currentPage * usersPerPage;
@@ -202,11 +192,7 @@ const Admin = () => {
     { name: "Filtered", value: filteredUsers.length },
   ];
 
-  const pieData = [
-    { name: "Total", value: users.length },
-    { name: "Filtered", value: filteredUsers.length },
-  ];
-
+  const pieData = barData;
   const COLORS = ["#3b82f6", "#22c55e"];
   return (
     <div className="min-h-screen relative">

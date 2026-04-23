@@ -4,7 +4,7 @@ let client;
 
 exports.handler = async (event) => {
   try {
-    const id = event.path.split("/").pop();
+    const id = event.queryStringParameters.id;
 
     if (!client) {
       client = new MongoClient(process.env.MONGO_URI);

@@ -31,7 +31,7 @@ exports.handler = async (event) => {
 
     // ✅ DELETE contact
     if (event.httpMethod === "DELETE") {
-      const id = event.path.split("/").pop();
+      const id = event.queryStringParameters.id; 
 
       await db.collection("contacts").deleteOne({
         _id: new ObjectId(id),
