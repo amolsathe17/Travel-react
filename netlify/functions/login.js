@@ -36,7 +36,7 @@ exports.handler = async (event) => {
         await client.connect();
       }
 
-      const db = client.db("test");
+      const db = client.db("travel");
 
       const user = await db.collection("users").findOne({ username });
 

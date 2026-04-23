@@ -43,7 +43,7 @@ exports.handler = async (event) => {
       await client.connect();
     }
 
-    const db = client.db("test");
+    const db = client.db("travel");
 
     // Prevent duplicate emails
     const existing = await db
