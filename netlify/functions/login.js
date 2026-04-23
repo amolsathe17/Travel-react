@@ -1,105 +1,39 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+const { MongoClient } = require("mongodb");
 
-const Login = () => {
-  const [form, setForm] = useState({ username: "", password: "" });
-  const navigate = useNavigate();
+let client;
 
-  const handleLogin = async () => {
-    try {
-      const res = await fetch("/.netlify/functions/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(form),
-      });
+exports.handler = async (event) => {
+  try {
+    const { username, password } = JSON.parse(event.body);
 
-      // ✅ Handle non-JSON safely
-      let data;
-      try {
-        data = await res.json();
-      } catch {
-        throw new Error("Invalid server response");
-      }
-
-      // ✅ Handle HTTP errors (like 502, 404)
-      if (!res.ok) {
-        throw new Error(data?.error || "Server error");
-      }
-
-      if (data.token) {
-        localStorage.setItem("token", data.token);
-        navigate("/admin");
-      } else {
-        alert("Invalid login");
-      }
-    } catch (err) {
-      console.error("Login error:", err);
-
-      // ✅ Better error messages
-      if (err.message.includes("Failed to fetch")) {
-        alert("Server not reachable. Check deployment.");
-      } else {
-        alert(err.message || "Error logging in");
-      }
+    if (!process.env.MONGO_URI) {
+      throw new Error("MONGO_URI not found");
     }
-  };
 
-  return (
-    <div className="min-h-screen flex items-center justify-center relative">
+    if (!client) {
+      client = new MongoClient(process.env.MONGO_URI);
+      await client.connect();
+    }
 
-      {/* 🌄 BACKGROUND IMAGE */}
-      <div className="absolute inset-0">
-        <img
-          src="./maldives.jpg"
-          className="w-full h-full object-cover"
-          alt="background"
-        />
-      </div>
+    const db = client.db("travel");
 
-      {/* 🌑 OVERLAY */}
-      <div className="absolute inset-0 bg-black/50"></div>
+    const user = await db.collection("users").findOne({ username });
 
-      {/* CONTENT */}
-      <div className="relative z-10 ">
+    if (!user || user.password !== password) {
+      return {
+        statusCode: 401,
+        body: JSON.stringify({ error: "Invalid login" }),
+      };
+    }
 
-        <div className="bg-black/50 p-8 rounded-xl shadow-lg w-80">
-          
-          <h2 className="text-2xl font-bold mb-6 text-center text-white">
-            Admin Login
-          </h2>
-
-          <input
-            type="text"
-            placeholder="Username"
-            className="w-full p-2 border mb-3 rounded bg-white/80"
-            onChange={(e) =>
-              setForm({ ...form, username: e.target.value })
-            }
-          />
-
-          <input
-            type="password"
-            placeholder="Password"
-            className="w-full p-2 border mb-4 rounded  bg-white/80"
-            onChange={(e) =>
-              setForm({ ...form, password: e.target.value })
-            }
-          />
-
-          <button
-            onClick={handleLogin}
-            className="w-full btn btn-primary cursor-pointer"
-          >
-            Login
-          </button>
-
-        </div>
-
-      </div>
-    </div>
-  );
+    return {
+      statusCode: 200,
+      body: JSON.stringify({ token: "admin123" }),
+    };
+  } catch (err) {
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: err.message }),
+    };
+  }
 };
-
-export default Login;
