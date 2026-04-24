@@ -301,7 +301,7 @@ const Admin = () => {
           </div>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-2 max-w-7xl mx-auto mb-2 px-4 py-4 bg-black opacity-75 rounded-xl shadow">
+        <div className="grid md:grid-cols-2 gap-2 max-w-7xl mx-auto mb-2 px-5 py-5 bg-black opacity-75 rounded-xl shadow">
           {/* USERS */}
           <div className="space-y-2">
             <h2 className="text-white text-xl font-semibold">Subscribers</h2>
@@ -327,7 +327,7 @@ const Admin = () => {
           {/* CONTACTS */}
           <div className="space-y-2">
             <h2 className="text-white text-xl font-semibold">
-              Contact Messages (Messages received from)
+              Messages received from
             </h2>
 
             {filteredContacts.map((c) => (
