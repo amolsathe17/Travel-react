@@ -40,7 +40,7 @@ const Admin = () => {
     if (!token) navigate("/login");
   }, []);
 
-  // FETCH DATA
+  // FETCH
   const fetchUsers = async () => {
     const res = await fetch("/.netlify/functions/subscribers");
     setUsers(await res.json());
@@ -71,15 +71,13 @@ const Admin = () => {
   }, [search, usersPerPage, contactsPerPage]);
 
   // EXPORT
-  const exportSubscribers = () => {
+  const exportSubscribers = () =>
     window.open("/.netlify/functions/export-subscribers");
-  };
 
-  const exportMessages = () => {
+  const exportMessages = () =>
     window.open("/.netlify/functions/export-messages");
-  };
 
-  // DELETE
+  // ACTIONS
   const handleDelete = async (id) => {
     if (!window.confirm("Delete subscriber?")) return;
     await fetch(`/.netlify/functions/delete?id=${id}`, { method: "DELETE" });
@@ -104,8 +102,8 @@ const Admin = () => {
 
   const sendTemplate = async () => {
     if (!selectedTemplate) return alert("Select template");
-
     setLoading(true);
+
     await fetch("/.netlify/functions/send-template", {
       method: "POST",
       headers: {
@@ -123,9 +121,7 @@ const Admin = () => {
 
     await fetch("/.netlify/functions/reply", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         email: replyBox.email,
         message: replyMessage,
@@ -186,8 +182,13 @@ const Admin = () => {
           <h1 className="text-3xl font-bold text-white">Admin Dashboard</h1>
 
           <div className="flex gap-2">
-            <button onClick={exportSubscribers} className="btn btn-secondary">Export Subscribers</button>
-            <button onClick={exportMessages} className="btn btn-secondary">Export Messages</button>
+            <button onClick={exportSubscribers} className="btn btn-secondary">
+              Export Subscribers
+            </button>
+
+            <button onClick={exportMessages} className="btn btn-secondary">
+              Export Messages
+            </button>
 
             <button
               onClick={() => {
@@ -203,7 +204,6 @@ const Admin = () => {
 
         {/* CHARTS + TEMPLATE */}
         <div className="grid md:grid-cols-3 gap-4 max-w-7xl mx-auto px-4 py-4">
-          {/* SUBSCRIBERS CHART */}
           <div className="bg-white opacity-80 p-3 rounded-xl shadow">
             <ResponsiveContainer width="100%" height={180}>
               <BarChart data={userChart}>
@@ -216,7 +216,6 @@ const Admin = () => {
             </ResponsiveContainer>
           </div>
 
-          {/* MESSAGES CHART */}
           <div className="bg-white opacity-80 p-3 rounded-xl shadow">
             <ResponsiveContainer width="100%" height={180}>
               <PieChart>
@@ -230,7 +229,6 @@ const Admin = () => {
             </ResponsiveContainer>
           </div>
 
-          {/* TEMPLATE */}
           <div className="bg-white opacity-80 p-4 rounded-xl shadow flex flex-col gap-2">
             <select
               className="p-2 border rounded"
@@ -263,8 +261,8 @@ const Admin = () => {
         <div className="grid md:grid-cols-2 gap-2 max-w-7xl mx-auto px-5 py-5 bg-black opacity-75 rounded-xl shadow">
 
           {/* SUBSCRIBERS */}
-          <div>
-            <div className="flex justify-between items-center mb-2">
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
               <h2 className="text-white text-xl font-semibold">Subscribers</h2>
 
               <select
@@ -279,13 +277,13 @@ const Admin = () => {
             </div>
 
             {currentUsers.map((u, i) => (
-              <div key={u._id} className="flex justify-between bg-white p-3 rounded mb-2">
+              <div key={u._id} className="flex justify-between bg-white p-3 rounded">
                 <div>#{userFirst + i + 1} — {u.email}</div>
                 <button onClick={() => handleDelete(u._id)} className="btn btn-secondary">Delete</button>
               </div>
             ))}
 
-            <div className="flex justify-center gap-2 text-white mt-2">
+            <div className="flex justify-center gap-2 text-white">
               <button onClick={() => setUserPage(p => Math.max(p - 1, 1))} className="bg-white text-black px-2">◀</button>
               <span>{userPage}/{userTotalPages || 1}</span>
               <button onClick={() => setUserPage(p => Math.min(p + 1, userTotalPages || 1))} className="bg-white text-black px-2">▶</button>
@@ -293,8 +291,8 @@ const Admin = () => {
           </div>
 
           {/* MESSAGES */}
-          <div>
-            <div className="flex justify-between items-center mb-2">
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
               <h2 className="text-white text-xl font-semibold">Messages</h2>
 
               <select
@@ -309,7 +307,7 @@ const Admin = () => {
             </div>
 
             {currentContacts.map((c) => (
-              <div key={c._id} className="bg-white p-3 rounded mb-2 flex justify-between">
+              <div key={c._id} className="bg-white p-3 rounded flex justify-between">
                 <div>
                   <b>{c.name}</b> ({c.email})
                   <div>{c.message}</div>
@@ -324,15 +322,16 @@ const Admin = () => {
               </div>
             ))}
 
-            <div className="flex justify-center gap-2 text-white mt-2">
+            <div className="flex justify-center gap-2 text-white">
               <button onClick={() => setContactPage(p => Math.max(p - 1, 1))} className="bg-white text-black px-2">◀</button>
               <span>{contactPage}/{contactTotalPages || 1}</span>
               <button onClick={() => setContactPage(p => Math.min(p + 1, contactTotalPages || 1))} className="bg-white text-black px-2">▶</button>
             </div>
           </div>
+
         </div>
 
-        {/* REPLY MODAL */}
+        {/* MODAL */}
         {replyBox && (
           <div className="fixed inset-0 bg-black/70 flex items-center justify-center">
             <div className="bg-white p-5 rounded w-96">
@@ -341,7 +340,9 @@ const Admin = () => {
                 value={replyMessage}
                 onChange={(e) => setReplyMessage(e.target.value)}
               />
-              <button onClick={sendReply} className="bg-green-500 text-white px-3 py-1 rounded">Send</button>
+              <button onClick={sendReply} className="bg-green-500 text-white px-3 py-1 rounded">
+                Send
+              </button>
             </div>
           </div>
         )}
