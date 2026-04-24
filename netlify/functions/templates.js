@@ -35,5 +35,9 @@ exports.handler = async () => {
         error: err.message,
       }),
     };
+    return {
+  statusCode: 200,
+  body: JSON.stringify(htmlFiles), // ✅ array
+};
   }
 };

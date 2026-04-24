@@ -72,9 +72,19 @@ const Admin = () => {
     try {
       const res = await fetch("/.netlify/functions/templates");
       const data = await res.json();
-      setTemplates(data);
+
+      console.log("Templates API response:", data);
+
+      // ✅ ensure it's array
+      if (Array.isArray(data)) {
+        setTemplates(data);
+      } else {
+        console.error("Templates is not array:", data);
+        setTemplates([]); // prevent crash
+      }
     } catch (err) {
       console.log(err);
+      setTemplates([]);
     }
   };
 
@@ -175,11 +185,11 @@ const Admin = () => {
   };
 
   const filteredUsers = users.filter((u) =>
-    u.email.toLowerCase().includes(search.toLowerCase())
+    u.email.toLowerCase().includes(search.toLowerCase()),
   );
 
   const filteredContacts = contacts.filter((c) =>
-    c.email.toLowerCase().includes(search.toLowerCase())
+    c.email.toLowerCase().includes(search.toLowerCase()),
   );
 
   const indexOfLast = currentPage * usersPerPage;
@@ -257,11 +267,12 @@ const Admin = () => {
               onChange={(e) => setSelectedTemplate(e.target.value)}
             >
               <option value="">Select Template</option>
-              {templates.map((t, i) => (
-                <option key={i} value={t}>
-                  {t}
-                </option>
-              ))}
+              {Array.isArray(templates) &&
+                templates.map((t, i) => (
+                  <option key={i} value={t}>
+                    {t}
+                  </option>
+                ))}
             </select>
 
             <button
