@@ -28,7 +28,7 @@ const Admin = () => {
   const [notificationCount, setNotificationCount] = useState(0);
   const prevContactsRef = useRef([]);
 
-  // ✅ Separate Pagination
+  // ✅ Separate pagination
   const [userPage, setUserPage] = useState(1);
   const [usersPerPage, setUsersPerPage] = useState(5);
 
@@ -44,44 +44,32 @@ const Admin = () => {
 
   // FETCH USERS
   const fetchUsers = async () => {
-    try {
-      const res = await fetch("/.netlify/functions/subscribers");
-      const data = await res.json();
-      setUsers(data);
-    } catch {
-      alert("Backend error");
-    }
+    const res = await fetch("/.netlify/functions/subscribers");
+    const data = await res.json();
+    setUsers(data);
   };
 
   // FETCH CONTACTS
   const fetchContacts = async () => {
-    try {
-      const res = await fetch("/.netlify/functions/contacts");
-      const data = await res.json();
+    const res = await fetch("/.netlify/functions/contacts");
+    const data = await res.json();
 
-      if (prevContactsRef.current.length > 0) {
-        const diff = data.length - prevContactsRef.current.length;
-        if (diff > 0) setNotificationCount((prev) => prev + diff);
-      }
-
-      prevContactsRef.current = data;
-      setContacts(data);
-    } catch (err) {
-      console.log(err);
+    if (prevContactsRef.current.length > 0) {
+      const diff = data.length - prevContactsRef.current.length;
+      if (diff > 0) setNotificationCount((p) => p + diff);
     }
+
+    prevContactsRef.current = data;
+    setContacts(data);
   };
 
   // FETCH TEMPLATES
   const fetchTemplates = async () => {
-    try {
-      const res = await fetch("/.netlify/functions/templates");
-      const data = await res.json();
+    const res = await fetch("/.netlify/functions/templates");
+    const data = await res.json();
 
-      if (Array.isArray(data)) setTemplates(data);
-      else setTemplates([]);
-    } catch (err) {
-      setTemplates([]);
-    }
+    if (Array.isArray(data)) setTemplates(data);
+    else setTemplates([]);
   };
 
   useEffect(() => {
@@ -219,6 +207,7 @@ const Admin = () => {
       <div className="absolute inset-0 bg-black/40"></div>
 
       <div className="relative z-10 pt-20">
+        {/* HEADER */}
         <div className="flex justify-between max-w-7xl mx-auto px-4 py-4">
           <h1 className="text-3xl font-bold text-white">Admin Dashboard</h1>
 
@@ -235,7 +224,7 @@ const Admin = () => {
 
         {/* CHARTS + CONTROLS */}
         <div className="grid md:grid-cols-3 gap-4 max-w-7xl mx-auto mb-1 px-4 py-4">
-          {/* SUBSCRIBER CHART */}
+          {/* SUBSCRIBERS CHART */}
           <div className="bg-white opacity-80 pr-3 pt-3 rounded-xl shadow">
             <ResponsiveContainer width="100%" height={180}>
               <BarChart data={userChart}>
@@ -248,7 +237,7 @@ const Admin = () => {
             </ResponsiveContainer>
           </div>
 
-          {/* MESSAGE CHART */}
+          {/* MESSAGES CHART */}
           <div className="bg-white opacity-80 pr-3 pt-3 rounded-xl shadow">
             <ResponsiveContainer width="100%" height={180}>
               <PieChart>
@@ -262,7 +251,7 @@ const Admin = () => {
             </ResponsiveContainer>
           </div>
 
-          {/* CONTROLS (UNCHANGED STYLE) */}
+          {/* CONTROLS */}
           <div className="bg-white opacity-80 p-4 rounded-xl shadow flex flex-col gap-2">
             <button onClick={handleExport} className="btn btn-secondary cursor-pointer">
               Export Excel
@@ -305,7 +294,82 @@ const Admin = () => {
           </div>
         </div>
 
-        {/* KEEP REST SAME (lists + pagination + reply modal) */}
+        {/* LISTS */}
+        <div className="grid md:grid-cols-2 gap-2 max-w-7xl mx-auto mb-2 px-5 py-5 bg-black opacity-75 rounded-xl shadow">
+          {/* USERS */}
+          <div className="space-y-2">
+            <h2 className="text-white text-xl font-semibold">Subscribers</h2>
+            {currentUsers.map((user, i) => (
+              <div key={user._id} className="flex justify-between bg-white p-4 rounded shadow">
+                <div>
+                  #{userFirst + i + 1} — {user.email}
+                </div>
+                <button onClick={() => handleDelete(user._id)} className="btn btn-secondary cursor-pointer">
+                  Delete
+                </button>
+              </div>
+            ))}
+
+            <div className="flex justify-center mt-4 gap-2 text-white">
+              <button onClick={() => setUserPage(p => Math.max(p - 1, 1))} className="px-3 py-1 bg-white text-black rounded">◀</button>
+              <span>Page {userPage} / {userTotalPages || 1}</span>
+              <button onClick={() => setUserPage(p => Math.min(p + 1, userTotalPages || 1))} className="px-3 py-1 bg-white text-black rounded">▶</button>
+            </div>
+          </div>
+
+          {/* CONTACTS */}
+          <div className="space-y-2">
+            <h2 className="text-white text-xl font-semibold">Messages received</h2>
+
+            {currentContacts.map((c) => (
+              <div key={c._id} className="bg-white p-4 rounded shadow flex justify-between">
+                <div>
+                  <b>{c.name}</b> ({c.email})
+                  <div>{c.message}</div>
+                </div>
+
+                <div className="flex gap-2 flex-wrap">
+                  <button onClick={() => setReplyBox(c)} className="btn btn-secondary"><Mail size={16} /></button>
+                  <button onClick={() => toggleImportant(c._id)} className="btn btn-secondary"><Star size={16} /></button>
+                  <button onClick={() => markReplied(c._id)} className="btn btn-secondary"><Check size={16} /></button>
+                  <button onClick={() => deleteContact(c._id)} className="btn btn-secondary"><Trash size={16} /></button>
+                </div>
+              </div>
+            ))}
+
+            <div className="flex justify-center mt-4 gap-2 text-white">
+              <button onClick={() => setContactPage(p => Math.max(p - 1, 1))} className="px-3 py-1 bg-white text-black rounded">◀</button>
+              <span>Page {contactPage} / {contactTotalPages || 1}</span>
+              <button onClick={() => setContactPage(p => Math.min(p + 1, contactTotalPages || 1))} className="px-3 py-1 bg-white text-black rounded">▶</button>
+            </div>
+          </div>
+        </div>
+
+        {/* REPLY MODAL */}
+        {replyBox && (
+          <div className="fixed inset-0 bg-black/70 flex items-center justify-center">
+            <div className="bg-white p-6 rounded-xl w-full max-w-md">
+              <h2 className="text-lg mb-3">Reply to {replyBox.email}</h2>
+
+              <textarea
+                rows="4"
+                className="w-full p-2 border rounded mb-4"
+                value={replyMessage}
+                onChange={(e) => setReplyMessage(e.target.value)}
+              />
+
+              <div className="flex justify-end gap-2">
+                <button onClick={() => setReplyBox(null)} className="px-4 py-2 bg-gray-400 rounded">
+                  Cancel
+                </button>
+
+                <button onClick={sendReply} className="px-4 py-2 bg-green-500 text-white rounded">
+                  Send
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
