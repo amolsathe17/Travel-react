@@ -17,11 +17,11 @@ exports.handler = async (event) => {
     console.log("Selected template:", templateName);
 
     // ✅ 2. FIXED PATH (important)
-    const filePath = path.resolve(
-      process.cwd(),
-      "netlify/functions/templates",
-      templateName
-    );
+const filePath = path.resolve(
+  process.cwd(),
+  "netlify/functions/templates",
+  templateName
+);
 
     console.log("Template path:", filePath);
 

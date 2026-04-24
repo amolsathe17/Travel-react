@@ -3,44 +3,39 @@ const path = require("path");
 
 exports.handler = async () => {
   try {
-    // ✅ Absolute path from project root
     const templatesDir = path.resolve(
       process.cwd(),
       "netlify/functions/templates"
     );
 
-    console.log("Looking for templates in:", templatesDir);
+    console.log("PATH:", templatesDir);
 
-    // ✅ Check existence
     if (!fs.existsSync(templatesDir)) {
       return {
         statusCode: 500,
         body: JSON.stringify({
-          error: "Templates folder NOT found",
+          error: "Folder NOT found",
           path: templatesDir,
         }),
       };
     }
 
-    // ✅ Read files
     const files = fs.readdirSync(templatesDir);
 
-    const htmlFiles = files.filter((file) =>
-      file.toLowerCase().endsWith(".html")
+    const htmlFiles = files.filter((f) =>
+      f.toLowerCase().endsWith(".html")
     );
 
     return {
       statusCode: 200,
-      body: JSON.stringify(htmlFiles), // MUST be array
+      body: JSON.stringify(htmlFiles),
     };
   } catch (err) {
-    console.error("TEMPLATES ERROR:", err);
+    console.error(err);
 
     return {
       statusCode: 500,
-      body: JSON.stringify({
-        error: err.message,
-      }),
+      body: JSON.stringify({ error: err.message }),
     };
   }
 };
