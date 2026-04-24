@@ -3,9 +3,13 @@ const path = require("path");
 
 exports.handler = async () => {
   try {
-    const templatesDir = path.join(__dirname, "templates");
+    // ✅ FIXED PATH
+    const templatesDir = path.resolve(
+      process.cwd(),
+      "netlify/functions/templates"
+    );
 
-    console.log("Looking here:", templatesDir);
+    console.log("Correct Path:", templatesDir);
 
     if (!fs.existsSync(templatesDir)) {
       return {
