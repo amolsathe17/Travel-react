@@ -25,7 +25,7 @@ exports.handler = async () => {
     const htmlFiles = files.filter((f) =>
       f.toLowerCase().endsWith(".html")
     );
-
+console.log("Templates function hit");
     return {
       statusCode: 200,
       body: JSON.stringify(htmlFiles),
