@@ -1,27 +1,27 @@
 const fs = require("fs");
 const path = require("path");
 const nodemailer = require("nodemailer");
-
-// Mongo users (example)
 const { MongoClient } = require("mongodb");
-
-const uri = process.env.MONGO_URI;
 
 exports.handler = async (event) => {
   try {
     const { templateName } = JSON.parse(event.body);
 
-    // ✅ 1. Load HTML file
-    const filePath = path.join(
-      __dirname,
-      "templates",
-      templateName
-    );
+    if (!templateName) {
+      throw new Error("No template selected");
+    }
+
+    // ✅ load HTML file
+    const filePath = path.join(__dirname, "templates", templateName);
+
+    if (!fs.existsSync(filePath)) {
+      throw new Error("Template not found");
+    }
 
     const htmlContent = fs.readFileSync(filePath, "utf-8");
 
-    // ✅ 2. Get users from MongoDB
-    const client = new MongoClient(uri);
+    // ✅ get subscribers
+    const client = new MongoClient(process.env.MONGO_URI);
     await client.connect();
 
     const users = await client
@@ -30,7 +30,7 @@ exports.handler = async (event) => {
       .find({})
       .toArray();
 
-    // ✅ 3. Setup mail transporter
+    // ✅ mail setup
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
@@ -39,13 +39,13 @@ exports.handler = async (event) => {
       },
     });
 
-    // ✅ 4. Send email to all users
+    // ✅ send mail
     for (let user of users) {
       await transporter.sendMail({
         from: process.env.EMAIL,
         to: user.email,
         subject: "Special Offer 🎉",
-        html: htmlContent, // 🔥 THIS sends HTML template
+        html: htmlContent,
       });
     }
 
@@ -56,6 +56,8 @@ exports.handler = async (event) => {
       body: JSON.stringify({ message: "Emails sent" }),
     };
   } catch (err) {
+    console.error(err);
+
     return {
       statusCode: 500,
       body: JSON.stringify({ error: err.message }),
