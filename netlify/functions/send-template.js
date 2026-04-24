@@ -10,17 +10,17 @@ exports.handler = async (event) => {
     const { templateName } = JSON.parse(event.body);
 
     if (!templateName) {
-      throw new Error("No template selected");
+      throw new Error("Template not selected");
     }
 
-    // ✅ HTML file path
-    const filePath = path.join(
-      __dirname,
-      "templates",
+    // ✅ SAFE PATH (works even if moved)
+    const filePath = path.resolve(
+      process.cwd(),
+      "netlify/functions/templates",
       templateName
     );
 
-    console.log("Template path:", filePath);
+    console.log("Template file:", filePath);
 
     if (!fs.existsSync(filePath)) {
       throw new Error("Template file not found");
@@ -28,21 +28,17 @@ exports.handler = async (event) => {
 
     const htmlContent = fs.readFileSync(filePath, "utf-8");
 
-    // ✅ MongoDB connect
+    // ✅ DB
     client = new MongoClient(process.env.MONGO_URI);
     await client.connect();
 
     const users = await client
-      .db("yourDB") // change if needed
+      .db("yourDB")
       .collection("subscribers")
       .find({})
       .toArray();
 
-    if (!users.length) {
-      throw new Error("No subscribers found");
-    }
-
-    // ✅ Email setup
+    // ✅ Email
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
@@ -51,14 +47,13 @@ exports.handler = async (event) => {
       },
     });
 
-    // ✅ Send emails
     for (let user of users) {
       if (!user.email) continue;
 
       await transporter.sendMail({
         from: process.env.EMAIL,
         to: user.email,
-        subject: "🎉 Special Offer",
+        subject: "Special Offer 🎉",
         html: htmlContent,
       });
     }
@@ -67,13 +62,9 @@ exports.handler = async (event) => {
 
     return {
       statusCode: 200,
-      body: JSON.stringify({
-        message: "Emails sent successfully 🚀",
-      }),
+      body: JSON.stringify({ message: "Sent successfully 🚀" }),
     };
   } catch (err) {
-    console.error("Send error:", err.message);
-
     if (client) await client.close();
 
     return {
