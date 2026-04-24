@@ -5,39 +5,29 @@ exports.handler = async () => {
   try {
     const templatesDir = path.join(__dirname, "templates");
 
-    console.log("Reading from:", templatesDir);
+    console.log("Looking here:", templatesDir);
 
-    // ✅ Check if folder exists
     if (!fs.existsSync(templatesDir)) {
-      throw new Error("Templates folder not found");
+      return {
+        statusCode: 500,
+        body: JSON.stringify({
+          error: "Folder NOT found",
+          path: templatesDir,
+        }),
+      };
     }
 
-    // ✅ Read files
     const files = fs.readdirSync(templatesDir);
-
-    // ✅ Filter only HTML
-    const htmlFiles = files.filter((file) =>
-      file.endsWith(".html")
-    );
-
-    console.log("Templates found:", htmlFiles);
+    const htmlFiles = files.filter((f) => f.endsWith(".html"));
 
     return {
       statusCode: 200,
       body: JSON.stringify(htmlFiles),
     };
   } catch (err) {
-    console.error("ERROR:", err.message);
-
     return {
       statusCode: 500,
-      body: JSON.stringify({
-        error: err.message,
-      }),
+      body: JSON.stringify({ error: err.message }),
     };
-    return {
-  statusCode: 200,
-  body: JSON.stringify(htmlFiles), // ✅ array
-};
   }
 };
