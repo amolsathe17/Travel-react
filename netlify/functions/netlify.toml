@@ -1,7 +1,7 @@
 [build]
   command = "npm run build"
-  publish = "dist"   
+  publish = "dist"   # use "build" if CRA
 
 [functions]
   directory = "netlify/functions"
-  included_files = ["netlify/functions/templates/**"]
+  included_files = ["templates/**"]
