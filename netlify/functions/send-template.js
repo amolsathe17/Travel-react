@@ -13,14 +13,12 @@ exports.handler = async (event) => {
       throw new Error("Template not selected");
     }
 
-    // ✅ SAFE PATH (works even if moved)
-    const filePath = path.resolve(
-      process.cwd(),
-      "netlify/functions/templates",
+    // ✅ HTML file
+    const filePath = path.join(
+      __dirname,
+      "templates",
       templateName
     );
-
-    console.log("Template file:", filePath);
 
     if (!fs.existsSync(filePath)) {
       throw new Error("Template file not found");
@@ -28,7 +26,7 @@ exports.handler = async (event) => {
 
     const htmlContent = fs.readFileSync(filePath, "utf-8");
 
-    // ✅ DB
+    // ✅ DB connect
     client = new MongoClient(process.env.MONGO_URI);
     await client.connect();
 
@@ -38,7 +36,11 @@ exports.handler = async (event) => {
       .find({})
       .toArray();
 
-    // ✅ Email
+    if (!users.length) {
+      throw new Error("No subscribers found");
+    }
+
+    // ✅ Email setup
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
@@ -47,9 +49,8 @@ exports.handler = async (event) => {
       },
     });
 
+    // ✅ Send emails
     for (let user of users) {
-      if (!user.email) continue;
-
       await transporter.sendMail({
         from: process.env.EMAIL,
         to: user.email,
@@ -65,11 +66,15 @@ exports.handler = async (event) => {
       body: JSON.stringify({ message: "Sent successfully 🚀" }),
     };
   } catch (err) {
+    console.error(err);
+
     if (client) await client.close();
 
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: err.message }),
+      body: JSON.stringify({
+        error: err.message,
+      }),
     };
   }
 };
