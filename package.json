@@ -23,6 +23,7 @@
     "lucide-react": "^1.8.0",
     "mongodb": "^7.2.0",
     "mongoose": "^9.5.0",
+    "nodemailer": "^8.0.5",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "react-helmet": "^6.1.0",
