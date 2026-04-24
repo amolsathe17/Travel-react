@@ -33,7 +33,7 @@ const Admin = () => {
   const [usersPerPage, setUsersPerPage] = useState(5);
 
   const [contactPage, setContactPage] = useState(1);
-  const [contactsPerPage] = useState(5);
+  const contactsPerPage = 5;
 
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
@@ -104,7 +104,6 @@ const Admin = () => {
     fetchContacts();
   };
 
-  // IMPORTANT / REPLIED
   const toggleImportant = async (id) => {
     await fetch(`/.netlify/functions/important?id=${id}`, {
       method: "PUT",
@@ -124,6 +123,7 @@ const Admin = () => {
     if (!selectedTemplate) return alert("Select template first");
 
     setLoading(true);
+
     await fetch("/.netlify/functions/send-template", {
       method: "POST",
       headers: {
@@ -177,19 +177,15 @@ const Admin = () => {
   // CONTACT PAGINATION
   const contactLast = contactPage * contactsPerPage;
   const contactFirst = contactLast - contactsPerPage;
-  const currentContacts = filteredContacts.slice(
-    contactFirst,
-    contactLast
-  );
-  const contactTotalPages = Math.ceil(
-    filteredContacts.length / contactsPerPage
-  );
+  const currentContacts = filteredContacts.slice(contactFirst, contactLast);
+  const contactTotalPages = Math.ceil(filteredContacts.length / contactsPerPage);
 
   const barData = [
     { name: "Total", value: users.length },
     { name: "Filtered", value: filteredUsers.length },
   ];
 
+  const pieData = barData;
   const COLORS = ["#3b82f6", "#22c55e"];
 
   return (
@@ -202,9 +198,7 @@ const Admin = () => {
 
       <div className="relative z-10 pt-20">
         <div className="flex justify-between max-w-7xl mx-auto px-4 py-4">
-          <h1 className="text-3xl font-bold text-white">
-            Admin Dashboard
-          </h1>
+          <h1 className="text-3xl font-bold text-white">Admin Dashboard</h1>
 
           <button
             onClick={() => {
@@ -217,15 +211,43 @@ const Admin = () => {
           </button>
         </div>
 
-        {/* CONTROLS */}
-        <div className="grid md:grid-cols-3 gap-4 max-w-7xl mx-auto px-4 py-4">
-          <div className="bg-white opacity-80 p-4 rounded-xl shadow">
-            <button onClick={handleExport} className="mb-2">
+        {/* CHARTS + CONTROLS */}
+        <div className="grid md:grid-cols-3 gap-4 max-w-7xl mx-auto mb-1 px-4 py-4">
+          {/* BAR */}
+          <div className="bg-white opacity-80 pr-3 pt-3 rounded-xl shadow">
+            <ResponsiveContainer width="100%" height={180}>
+              <BarChart data={barData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="value" fill="#3b82f6" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* PIE */}
+          <div className="bg-white opacity-80 pr-3 pt-3 rounded-xl shadow">
+            <ResponsiveContainer width="100%" height={180}>
+              <PieChart>
+                <Pie data={pieData} dataKey="value" outerRadius={90}>
+                  {pieData.map((_, i) => (
+                    <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* CONTROLS */}
+          <div className="bg-white opacity-80 p-4 rounded-xl shadow flex flex-col gap-2">
+            <button onClick={handleExport} className="btn btn-secondary">
               Export Excel
             </button>
 
             <select
-              className="p-2 border w-full mb-2"
+              className="p-2 border rounded"
               value={selectedTemplate}
               onChange={(e) => setSelectedTemplate(e.target.value)}
             >
@@ -237,101 +259,56 @@ const Admin = () => {
 
             <button
               onClick={sendTemplate}
-              className="bg-purple-600 text-white w-full py-2"
+              className="bg-purple-600 text-white py-2 rounded"
             >
               {loading ? "Sending..." : "Send Template"}
             </button>
 
             <input
-              className="mt-2 p-2 border w-full"
-              placeholder="Search..."
+              type="text"
+              placeholder="Search email..."
+              className="p-2 border rounded"
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
         </div>
 
         {/* LISTS */}
-        <div className="grid md:grid-cols-2 gap-4 max-w-7xl mx-auto px-4 py-4">
+        <div className="grid md:grid-cols-2 gap-2 max-w-7xl mx-auto mb-2 px-5 py-5 bg-black opacity-75 rounded-xl shadow">
           {/* USERS */}
           <div>
-            <h2 className="text-white text-xl mb-2">
-              Subscribers
-            </h2>
-
+            <h2 className="text-white text-xl mb-2">Subscribers</h2>
             {currentUsers.map((user, i) => (
-              <div
-                key={user._id}
-                className="bg-white p-3 mb-2 flex justify-between"
-              >
-                #{userFirst + i + 1} {user.email}
-                <button onClick={() => handleDelete(user._id)}>
-                  Delete
-                </button>
+              <div key={user._id} className="bg-white p-4 mb-2 flex justify-between">
+                #{userFirst + i + 1} — {user.email}
+                <button onClick={() => handleDelete(user._id)}>Delete</button>
               </div>
             ))}
 
-            {/* USER PAGINATION */}
-            <div className="text-white">
-              <button
-                onClick={() =>
-                  setUserPage((p) => Math.max(p - 1, 1))
-                }
-              >
-                ◀
-              </button>
+            <div className="text-white flex justify-center gap-2">
+              <button onClick={() => setUserPage(p => Math.max(p - 1, 1))}>◀</button>
               Page {userPage} / {userTotalPages || 1}
-              <button
-                onClick={() =>
-                  setUserPage((p) =>
-                    Math.min(p + 1, userTotalPages)
-                  )
-                }
-              >
-                ▶
-              </button>
+              <button onClick={() => setUserPage(p => Math.min(p + 1, userTotalPages))}>▶</button>
             </div>
           </div>
 
           {/* CONTACTS */}
           <div>
-            <h2 className="text-white text-xl mb-2">
-              Messages
-            </h2>
-
+            <h2 className="text-white text-xl mb-2">Messages</h2>
             {currentContacts.map((c) => (
-              <div
-                key={c._id}
-                className="bg-white p-3 mb-2 flex justify-between"
-              >
+              <div key={c._id} className="bg-white p-4 mb-2 flex justify-between">
                 <div>
                   {c.name} ({c.email})
                   <div>{c.message}</div>
                 </div>
-                <button onClick={() => deleteContact(c._id)}>
-                  Delete
-                </button>
+                <button onClick={() => deleteContact(c._id)}>Delete</button>
               </div>
             ))}
 
-            {/* CONTACT PAGINATION */}
-            <div className="text-white">
-              <button
-                onClick={() =>
-                  setContactPage((p) => Math.max(p - 1, 1))
-                }
-              >
-                ◀
-              </button>
+            <div className="text-white flex justify-center gap-2">
+              <button onClick={() => setContactPage(p => Math.max(p - 1, 1))}>◀</button>
               Page {contactPage} / {contactTotalPages || 1}
-              <button
-                onClick={() =>
-                  setContactPage((p) =>
-                    Math.min(p + 1, contactTotalPages)
-                  )
-                }
-              >
-                ▶
-              </button>
+              <button onClick={() => setContactPage(p => Math.min(p + 1, contactTotalPages))}>▶</button>
             </div>
           </div>
         </div>
